@@ -41,6 +41,7 @@
   (before-each
     (add-to-list 'custom-theme-load-path default-directory)
     (setq lackluster-theme-no-bold t)
+    (setq lackluster-theme-pure-black-white nil)
     (mapc #'disable-theme custom-enabled-themes))
 
   (describe "Package Loading"
@@ -85,7 +86,14 @@
       (expect (boundp 'lackluster-dark-palette) :to-be-truthy)
       (expect (boundp 'lackluster-hack-palette) :to-be-truthy)
       (expect (boundp 'lackluster-mint-palette) :to-be-truthy)
-      (expect (boundp 'lackluster-night-palette) :to-be-truthy)))
+      (expect (boundp 'lackluster-night-palette) :to-be-truthy))
+
+    (it "can switch the main surface to pure black and white"
+      (setq lackluster-theme-pure-black-white t)
+      (expect (lackluster-theme-test--palette-color 'lackluster 'bg-main)
+              :to-equal "#000000")
+      (expect (lackluster-theme-test--palette-color 'lackluster 'fg-main)
+              :to-equal "#ffffff")))
 
   (describe "Theme Properties"
     (it "marks every variant as a theme"
@@ -97,6 +105,36 @@
       (load-theme 'lackluster-night t :no-enable)
       (expect (lackluster-theme-test--face-plist 'lackluster-night 'solaire-default-face)
               :to-be-truthy)))
+
+  (describe "Org Presentation"
+    (it "uses muted gray metadata faces"
+      (load-theme 'lackluster t :no-enable)
+      (let ((dim (lackluster-theme-test--palette-color 'lackluster 'fg-dim)))
+        (expect (lackluster-theme-test--face-foreground 'lackluster 'org-document-info-keyword)
+                :to-equal dim)
+        (expect (lackluster-theme-test--face-foreground 'lackluster 'org-drawer)
+                :to-equal dim)
+        (expect (lackluster-theme-test--face-foreground 'lackluster 'org-special-keyword)
+                :to-equal dim)))
+
+    (it "bolds org titles and headings"
+      (load-theme 'lackluster t :no-enable)
+      (expect (plist-get (lackluster-theme-test--face-plist 'lackluster 'org-document-title) :weight)
+              :to-equal 'bold)
+      (expect (plist-get (lackluster-theme-test--face-plist 'lackluster 'org-level-1) :weight)
+              :to-equal 'bold)))
+
+  (describe "Version Control Presentation"
+    (it "keeps Magit headings muted rather than brightly accented"
+      (load-theme 'lackluster t :no-enable)
+      (let ((alt (lackluster-theme-test--palette-color 'lackluster 'fg-alt))
+            (dim (lackluster-theme-test--palette-color 'lackluster 'fg-dim)))
+        (expect (lackluster-theme-test--face-foreground 'lackluster 'magit-section-heading)
+                :to-equal alt)
+        (expect (lackluster-theme-test--face-foreground 'lackluster 'magit-branch-remote)
+                :to-equal dim)
+        (expect (lackluster-theme-test--face-foreground 'lackluster 'majutsu-hash)
+                :to-equal dim))))
 
   (describe "Baseline Highlighting"
     (it "keeps baseline keywords and calls neutral while accenting sparse syntax"
