@@ -67,8 +67,9 @@ sparingly and avoiding extra typographic emphasis."
   :type '(alist :key-type integer :value-type number)
   :group 'lackluster-theme)
 
-(defvar lackluster-theme-custom-variables nil
-  "Custom variable specifications shared by all Lackluster themes.")
+(eval-and-compile
+  (defvar lackluster-theme-custom-variables nil
+    "Custom variable specifications shared by all Lackluster themes."))
 
 (defun lackluster-theme--retrieve-palette-value (color palette)
   "Resolve COLOR recursively in PALETTE.
@@ -162,8 +163,9 @@ Boldness follows `lackluster-theme-no-bold'."
             (unless (= height 1.0)
               (list :height height)))))
 
-(defvar lackluster-theme-faces
-  '(
+(eval-and-compile
+  (defvar lackluster-theme-faces
+    '(
     ;; Basic faces
     `(default ((,c :background ,bg-main :foreground ,fg-main)))
     `(cursor ((,c :background ,cursor)))
@@ -346,6 +348,18 @@ Boldness follows `lackluster-theme-no-bold'."
     `(which-key-note-face ((,c :inherit shadow)))
     `(which-key-separator-face ((,c :inherit shadow)))
     `(which-key-special-key-face ((,c :inherit error)))
+
+    ;; solaire-mode
+    `(solaire-default-face ((,c :background ,bg-alt :foreground ,fg-main)))
+    `(solaire-fringe-face ((,c :background ,bg-alt :foreground ,fg-fringe)))
+    `(solaire-line-number-face ((,c :background ,bg-alt :foreground ,fg-dim)))
+    `(solaire-hl-line-face ((,c :background ,bg-active :foreground ,fg-main :extend t)))
+    `(solaire-org-hide-face ((,c :foreground ,bg-alt)))
+    `(solaire-region-face ((,c :background ,bg-region :foreground ,fg-region :extend t)))
+    `(solaire-mode-line-face ((,c :background ,bg-mode-line :foreground ,fg-mode-line)))
+    `(solaire-mode-line-active-face ((,c :background ,bg-mode-line :foreground ,fg-mode-line)))
+    `(solaire-mode-line-inactive-face ((,c :background ,bg-inactive :foreground ,fg-dim)))
+    `(solaire-header-line-face ((,c :background ,bg-alt :foreground ,fg-alt)))
 
     ;; Diagnostics and code intelligence
     `(flycheck-error ((,c :inherit lackluster-theme-underline-error)))
@@ -597,8 +611,8 @@ Boldness follows `lackluster-theme-no-bold'."
     `(custom-state ((,c :foreground ,fg-alt)))
     `(custom-themed ((,c :inherit custom-changed)))
     `(custom-variable-tag ((,c :foreground ,variable)))
-    `(custom-variable-obsolete ((,c :inherit shadow))))
-  "Face specifications shared by the packaged Lackluster themes.")
+      `(custom-variable-obsolete ((,c :inherit shadow))))
+    "Face specifications shared by the packaged Lackluster themes."))
 
 (defmacro lackluster-theme--define (name palette &optional overrides faces)
   "Define theme NAME using PALETTE and optional OVERRIDES.
@@ -606,7 +620,10 @@ Boldness follows `lackluster-theme-no-bold'."
 FACES defaults to `lackluster-theme-faces'."
   (declare (indent 0))
   (let* ((palette-symbols (delete-dups (copy-sequence (mapcar #'car (symbol-value palette)))))
-         (palette-value (cl-gensym "palette")))
+         (palette-value (cl-gensym "palette"))
+         (face-forms (or (and faces (symbol-value faces))
+                         (symbol-value 'lackluster-theme-faces)))
+         (variable-forms (symbol-value 'lackluster-theme-custom-variables)))
     `(let* ((c '((class color) (min-colors 256)))
             (,palette-value (lackluster-theme--palette-value ',name ',overrides))
             ,@(mapcar (lambda (color)
@@ -614,11 +631,10 @@ FACES defaults to `lackluster-theme-faces'."
                               `(lackluster-theme--retrieve-palette-value ',color ,palette-value)))
                       palette-symbols))
        (ignore c ,@palette-symbols)
-       (custom-theme-set-faces ',name
-                                ,@(or (and faces (symbol-value faces))
-                                      lackluster-theme-faces))
-       (custom-theme-set-variables ',name
-                                   ,@lackluster-theme-custom-variables))))
+       (apply #'custom-theme-set-faces ',name
+              (list ,@face-forms))
+       (apply #'custom-theme-set-variables ',name
+              (list ,@variable-forms)))))
 
 (defmacro lackluster-theme-with-colors (&rest body)
   "Evaluate BODY with the current Lackluster palette bound."

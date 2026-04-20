@@ -91,7 +91,12 @@
     (it "marks every variant as a theme"
       (dolist (theme lackluster-theme-test-variants)
         (load-theme theme t :no-enable)
-        (expect (get theme 'theme-feature) :to-be-truthy))))
+        (expect (get theme 'theme-feature) :to-be-truthy)))
+
+    (it "defines solaire support faces for themed configurations"
+      (load-theme 'lackluster-night t :no-enable)
+      (expect (lackluster-theme-test--face-plist 'lackluster-night 'solaire-default-face)
+              :to-be-truthy)))
 
   (describe "Baseline Highlighting"
     (it "keeps baseline keywords and calls neutral while accenting sparse syntax"
