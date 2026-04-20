@@ -115,7 +115,11 @@
 
     (it "keeps completion selection on the darker auxiliary background"
       (expect (lackluster-theme-test--palette-color 'lackluster 'bg-completion)
-              :to-equal "#0f0f0f"))
+              :to-equal "#222222"))
+
+    (it "keeps popup buffers on a dark gray distinct from the main buffer"
+      (expect (lackluster-theme-test--palette-color 'lackluster 'bg-popup)
+              :to-equal "#161616"))
 
     (it "uses the main surface background for solaire buffers in pure black mode"
       (setq lackluster-theme-pure-black-white t)
@@ -172,7 +176,16 @@
       (expect (lackluster-theme-test--face-foreground 'lackluster 'orderless-match-face-0)
               :to-equal (lackluster-theme-test--palette-color 'lackluster 'fg-alt))
       (expect (lackluster-theme-test--face-foreground 'lackluster 'orderless-match-face-2)
-              :to-equal (lackluster-theme-test--palette-color 'lackluster 'fg-intense))))
+              :to-equal (lackluster-theme-test--palette-color 'lackluster 'fg-intense)))
+
+    (it "uses gray annotation text and a dedicated popup background"
+      (load-theme 'lackluster t :no-enable)
+      (expect (lackluster-theme-test--face-foreground 'lackluster 'completions-annotations)
+              :to-equal (lackluster-theme-test--palette-color 'lackluster 'fg-alt))
+      (expect (lackluster-theme-test--face-foreground 'lackluster 'marginalia-documentation)
+              :to-equal (lackluster-theme-test--palette-color 'lackluster 'fg-alt))
+      (expect (plist-get (lackluster-theme-test--face-plist 'lackluster 'vertico-posframe) :background)
+              :to-equal (lackluster-theme-test--palette-color 'lackluster 'bg-popup))))
 
   (describe "Baseline Highlighting"
     (it "keeps baseline keywords and calls neutral while accenting sparse syntax"
