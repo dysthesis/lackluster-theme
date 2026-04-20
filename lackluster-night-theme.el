@@ -19,13 +19,18 @@
 (eval-and-compile
   (defconst lackluster-night-palette
     (append
-     '((keyword fg-alt)
-       (builtin lack)
-       (preprocessor lack)
+     '((variable fg-main)
+       (constant fg-alt)
+       (fnname luster)
+       (fncall gray6)
+       (property fg-alt)
+       (keyword lack)
+       (builtin blue)
+       (preprocessor blue)
        (string yellow)
        (escape blue)
-       (type blue)
-       (comment orange))
+       (type fg-alt)
+       (comment yellow))
      lackluster-palette)
     "Palette for `lackluster-night'."))
 

@@ -174,7 +174,7 @@
     (it "keeps lackluster-night bindings distinct from keywords"
       (load-theme 'lackluster-night t :no-enable)
       (expect (lackluster-theme-test--face-foreground 'lackluster-night 'font-lock-keyword-face)
-              :to-equal (lackluster-theme-test--palette-color 'lackluster-night 'fg-alt))
+              :to-equal (lackluster-theme-test--palette-color 'lackluster-night 'keyword))
       (expect (lackluster-theme-test--face-foreground 'lackluster-night 'font-lock-variable-name-face)
               :to-equal (lackluster-theme-test--palette-color 'lackluster-night 'variable)))
 
