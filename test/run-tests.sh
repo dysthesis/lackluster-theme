@@ -14,7 +14,7 @@ if [ -z "$BUTTERCUP_PATH" ]; then
     echo "Error: Cannot locate buttercup path."
     exit 1
 fi
-emacs --batch -L . -L "$BUTTERCUP_PATH" -l test/lackluster-theme-test.el -f buttercup-run-discover
+emacs --batch -L . -L "$BUTTERCUP_PATH" -l test/lackluster-theme-test.el -f buttercup-run
 
 echo ""
 echo "================================="

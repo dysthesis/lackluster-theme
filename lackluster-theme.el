@@ -605,7 +605,7 @@ Boldness follows `lackluster-theme-no-bold'."
 
 FACES defaults to `lackluster-theme-faces'."
   (declare (indent 0))
-  (let* ((palette-symbols (mapcar #'car (symbol-value palette)))
+  (let* ((palette-symbols (delete-dups (copy-sequence (mapcar #'car (symbol-value palette)))))
          (palette-value (cl-gensym "palette")))
     `(let* ((c '((class color) (min-colors 256)))
             (,palette-value (lackluster-theme--palette-value ',name ',overrides))
@@ -623,7 +623,7 @@ FACES defaults to `lackluster-theme-faces'."
 (defmacro lackluster-theme-with-colors (&rest body)
   "Evaluate BODY with the current Lackluster palette bound."
   (declare (indent 0))
-  (let* ((palette-symbols (mapcar #'car (lackluster-theme--current-theme-palette)))
+  (let* ((palette-symbols (delete-dups (copy-sequence (mapcar #'car (lackluster-theme--current-theme-palette)))))
          (palette-value (cl-gensym "palette")))
     `(let* ((c '((class color) (min-colors 256)))
             (,palette-value (lackluster-theme--current-theme-palette :overrides))

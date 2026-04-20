@@ -17,6 +17,25 @@
   (mapc #'disable-theme custom-enabled-themes)
   (load-theme theme t))
 
+(defun lackluster-theme-test--face-plist (theme face)
+  "Return the first face plist that THEME defines for FACE."
+  (when-let ((entry (seq-find (lambda (setting)
+                                (and (eq (car setting) 'theme-face)
+                                     (eq (nth 1 setting) face)
+                                     (eq (nth 2 setting) theme)))
+                              (get theme 'theme-settings))))
+    (cdr (car (nth 3 entry)))))
+
+(defun lackluster-theme-test--face-foreground (theme face)
+  "Return THEME's foreground for FACE from its stored face spec."
+  (plist-get (lackluster-theme-test--face-plist theme face) :foreground))
+
+(defun lackluster-theme-test--palette-color (theme name)
+  "Return resolved palette colour NAME for THEME."
+  (lackluster-theme--retrieve-palette-value
+   name
+   (lackluster-theme--palette-value theme)))
+
 (describe "Lackluster Theme Package"
 
   (before-each
@@ -76,13 +95,13 @@
 
   (describe "Baseline Highlighting"
     (it "keeps baseline keywords and calls neutral while accenting sparse syntax"
-      (lackluster-theme-test--load 'lackluster)
-      (let ((default-fg (face-foreground 'default nil t))
-            (keyword-fg (face-foreground 'font-lock-keyword-face nil t))
-            (call-fg (face-foreground 'font-lock-function-call-face nil t))
-            (string-fg (face-foreground 'font-lock-string-face nil t))
-            (comment-fg (face-foreground 'font-lock-comment-face nil t))
-            (definition-fg (face-foreground 'font-lock-function-name-face nil t)))
+      (load-theme 'lackluster t :no-enable)
+      (let ((default-fg (lackluster-theme-test--palette-color 'lackluster 'fg-main))
+            (keyword-fg (lackluster-theme-test--face-foreground 'lackluster 'font-lock-keyword-face))
+            (call-fg (lackluster-theme-test--face-foreground 'lackluster 'font-lock-function-call-face))
+            (string-fg (lackluster-theme-test--face-foreground 'lackluster 'font-lock-string-face))
+            (comment-fg (lackluster-theme-test--face-foreground 'lackluster 'font-lock-comment-face))
+            (definition-fg (lackluster-theme-test--face-foreground 'lackluster 'font-lock-function-name-face)))
         (expect keyword-fg :to-equal default-fg)
         (expect call-fg :to-equal default-fg)
         (expect string-fg :not :to-equal default-fg)
@@ -90,41 +109,51 @@
         (expect definition-fg :not :to-equal default-fg)))
 
     (it "keeps variable and property use faces neutral in the baseline theme"
-      (lackluster-theme-test--load 'lackluster)
-      (let ((default-fg (face-foreground 'default nil t)))
-        (expect (face-foreground 'font-lock-variable-use-face nil t) :to-equal default-fg)
-        (expect (face-foreground 'font-lock-property-use-face nil t) :to-equal default-fg))))
+      (load-theme 'lackluster t :no-enable)
+      (let ((default-fg (lackluster-theme-test--palette-color 'lackluster 'fg-main)))
+        (expect (lackluster-theme-test--face-foreground 'lackluster 'font-lock-variable-use-face)
+                :to-equal default-fg)
+        (expect (lackluster-theme-test--face-foreground 'lackluster 'font-lock-property-use-face)
+                :to-equal default-fg))))
 
   (describe "Variant Overlays"
     (it "makes `lackluster-dark' more subdued than the baseline"
-      (lackluster-theme-test--load 'lackluster)
-      (let ((base-fn (face-foreground 'font-lock-function-name-face nil t))
-            (base-string (face-foreground 'font-lock-string-face nil t)))
-        (lackluster-theme-test--load 'lackluster-dark)
-        (expect (face-foreground 'font-lock-function-name-face nil t) :not :to-equal base-fn)
-        (expect (face-foreground 'font-lock-string-face nil t) :not :to-equal base-string)))
+      (load-theme 'lackluster t :no-enable)
+      (load-theme 'lackluster-dark t :no-enable)
+      (let ((base-fn (lackluster-theme-test--face-foreground 'lackluster 'font-lock-function-name-face))
+            (base-string (lackluster-theme-test--face-foreground 'lackluster 'font-lock-string-face)))
+        (expect (lackluster-theme-test--face-foreground 'lackluster-dark 'font-lock-function-name-face)
+                :not :to-equal base-fn)
+        (expect (lackluster-theme-test--face-foreground 'lackluster-dark 'font-lock-string-face)
+                :not :to-equal base-string)))
 
     (it "makes `lackluster-hack' colour keywords"
-      (lackluster-theme-test--load 'lackluster-hack)
-      (let ((default-fg (face-foreground 'default nil t)))
-        (expect (face-foreground 'font-lock-keyword-face nil t) :not :to-equal default-fg)
-        (expect (face-foreground 'font-lock-type-face nil t) :to-equal default-fg)))
+      (load-theme 'lackluster-hack t :no-enable)
+      (let ((default-fg (lackluster-theme-test--palette-color 'lackluster-hack 'fg-main)))
+        (expect (lackluster-theme-test--face-foreground 'lackluster-hack 'font-lock-keyword-face)
+                :not :to-equal default-fg)
+        (expect (lackluster-theme-test--face-foreground 'lackluster-hack 'font-lock-type-face)
+                :to-equal default-fg)))
 
     (it "makes `lackluster-mint' colour type faces"
-      (lackluster-theme-test--load 'lackluster-mint)
-      (let ((default-fg (face-foreground 'default nil t)))
-        (expect (face-foreground 'font-lock-type-face nil t) :not :to-equal default-fg)
-        (expect (face-foreground 'font-lock-keyword-face nil t) :to-equal default-fg)))
+      (load-theme 'lackluster-mint t :no-enable)
+      (let ((default-fg (lackluster-theme-test--palette-color 'lackluster-mint 'fg-main)))
+        (expect (lackluster-theme-test--face-foreground 'lackluster-mint 'font-lock-type-face)
+                :not :to-equal default-fg)
+        (expect (lackluster-theme-test--face-foreground 'lackluster-mint 'font-lock-keyword-face)
+                :to-equal default-fg)))
 
     (it "makes `lackluster-night' the loosest syntax variant"
-      (lackluster-theme-test--load 'lackluster)
-      (let ((base-string (face-foreground 'font-lock-string-face nil t)))
-        (lackluster-theme-test--load 'lackluster-night)
-        (expect (face-foreground 'font-lock-keyword-face nil t)
-                :not :to-equal (face-foreground 'default nil t))
-        (expect (face-foreground 'font-lock-builtin-face nil t)
-                :not :to-equal (face-foreground 'default nil t))
-        (expect (face-foreground 'font-lock-string-face nil t) :not :to-equal base-string))))
+      (load-theme 'lackluster t :no-enable)
+      (load-theme 'lackluster-night t :no-enable)
+      (let ((base-string (lackluster-theme-test--face-foreground 'lackluster 'font-lock-string-face))
+            (default-fg (lackluster-theme-test--palette-color 'lackluster-night 'fg-main)))
+        (expect (lackluster-theme-test--face-foreground 'lackluster-night 'font-lock-keyword-face)
+                :not :to-equal default-fg)
+        (expect (lackluster-theme-test--face-foreground 'lackluster-night 'font-lock-builtin-face)
+                :not :to-equal default-fg)
+        (expect (lackluster-theme-test--face-foreground 'lackluster-night 'font-lock-string-face)
+                :not :to-equal base-string))))
 
   (describe "Typography Customisation"
     (it "avoids bold by default"
