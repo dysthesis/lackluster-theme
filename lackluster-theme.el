@@ -79,6 +79,22 @@ keeps the same muted supporting grays and accents."
   (defvar lackluster-theme-custom-variables nil
     "Custom variable specifications shared by all Lackluster themes."))
 
+(defconst lackluster-theme--majutsu-log-commit-columns
+  '((:field change-id :module heading :face majutsu-hash)
+    (:field bookmarks :module heading :face magit-branch-local)
+    (:field tags :module heading :face magit-tag)
+    (:field working-copies :module heading :face magit-branch-remote)
+    (:field empty :module heading :face shadow)
+    (:field git-head :module heading :face magit-head)
+    (:field description :module heading :face default)
+    (:field author :module tail :face magit-log-author)
+    (:field timestamp :module tail :face magit-log-date)
+    (:field long-desc :module body :face default)
+    (:field id :module metadata :face nil)
+    (:field commit-id :module metadata :face nil)
+    (:field flags :module metadata :face shadow))
+  "Majutsu log column faces that match the Lackluster/Magit styling.")
+
 (defun lackluster-theme--retrieve-palette-value (color palette)
   "Resolve COLOR recursively in PALETTE.
 
@@ -176,10 +192,22 @@ Boldness follows `lackluster-theme-no-bold'."
   "Return PALETTE after applying package-level display adjustments."
   (if lackluster-theme-pure-black-white
       (append '((bg-main "#000000")
+                (bg-solaire "#000000")
                 (fg-main "#ffffff")
                 (fg-intense "#ffffff"))
               palette)
     palette))
+
+(defun lackluster-theme--apply-package-settings ()
+  "Apply auxiliary package settings that need more than face specs."
+  (when (boundp 'majutsu-log-commit-columns)
+    (setq majutsu-log-commit-columns
+          (copy-tree lackluster-theme--majutsu-log-commit-columns))))
+
+(with-eval-after-load 'majutsu-log
+  (lackluster-theme--apply-package-settings))
+
+(lackluster-theme--apply-package-settings)
 
 (eval-and-compile
   (defvar lackluster-theme-faces
@@ -247,6 +275,7 @@ Boldness follows `lackluster-theme-no-bold'."
 
     ;; Mode line and tabs
     `(mode-line ((,c :background ,bg-mode-line :foreground ,fg-mode-line)))
+    `(mode-line-active ((,c :inherit mode-line)))
     `(mode-line-inactive ((,c :background ,bg-inactive :foreground ,fg-dim)))
     `(mode-line-buffer-id ((,c :foreground ,fg-main)))
     `(mode-line-emphasis ((,c :foreground ,fg-main)))
@@ -327,10 +356,10 @@ Boldness follows `lackluster-theme-no-bold'."
     `(vertico-quick1 ((,c :background ,bg-char-0 :foreground ,fg-main)))
     `(vertico-quick2 ((,c :background ,bg-char-1 :foreground ,fg-main)))
 
-    `(orderless-match-face-0 ((,c :foreground ,rainbow-0)))
-    `(orderless-match-face-1 ((,c :foreground ,rainbow-1)))
-    `(orderless-match-face-2 ((,c :foreground ,rainbow-2)))
-    `(orderless-match-face-3 ((,c :foreground ,rainbow-3)))
+    `(orderless-match-face-0 ((,c :foreground ,fg-alt)))
+    `(orderless-match-face-1 ((,c :foreground ,fg-main)))
+    `(orderless-match-face-2 ((,c :foreground ,fg-intense)))
+    `(orderless-match-face-3 ((,c :foreground ,fg-alt)))
 
     `(embark-collect-group-title ((,c :foreground ,name)))
     `(embark-keybinding ((,c :foreground ,keybind)))
@@ -368,16 +397,30 @@ Boldness follows `lackluster-theme-no-bold'."
     `(which-key-special-key-face ((,c :inherit error)))
 
     ;; solaire-mode
-    `(solaire-default-face ((,c :background ,bg-alt :foreground ,fg-main)))
-    `(solaire-fringe-face ((,c :background ,bg-alt :foreground ,fg-fringe)))
-    `(solaire-line-number-face ((,c :background ,bg-alt :foreground ,fg-dim)))
+    `(solaire-default-face ((,c :background ,bg-solaire :foreground ,fg-main)))
+    `(solaire-fringe-face ((,c :background ,bg-solaire :foreground ,fg-fringe)))
+    `(solaire-line-number-face ((,c :background ,bg-solaire :foreground ,fg-dim)))
     `(solaire-hl-line-face ((,c :background ,bg-active :foreground ,fg-main :extend t)))
-    `(solaire-org-hide-face ((,c :foreground ,bg-alt)))
+    `(solaire-org-hide-face ((,c :foreground ,bg-solaire)))
     `(solaire-region-face ((,c :background ,bg-region :foreground ,fg-region :extend t)))
     `(solaire-mode-line-face ((,c :background ,bg-mode-line :foreground ,fg-mode-line)))
     `(solaire-mode-line-active-face ((,c :background ,bg-mode-line :foreground ,fg-mode-line)))
     `(solaire-mode-line-inactive-face ((,c :background ,bg-inactive :foreground ,fg-dim)))
     `(solaire-header-line-face ((,c :background ,bg-alt :foreground ,fg-alt)))
+
+    ;; transient
+    `(transient-heading ((,c :foreground ,fg-alt)))
+    `(transient-key ((,c :foreground ,keybind)))
+    `(transient-argument ((,c :foreground ,fg-main)))
+    `(transient-value ((,c :foreground ,constant)))
+    `(transient-enabled-suffix ((,c :foreground ,fg-alt)))
+    `(transient-disabled-suffix ((,c :foreground ,fg-dim)))
+    `(transient-inactive-argument ((,c :foreground ,fg-dim)))
+    `(transient-inactive-value ((,c :foreground ,fg-dim)))
+    `(transient-unreachable ((,c :foreground ,fg-dim)))
+    `(transient-unreachable-key ((,c :foreground ,fg-dim)))
+    `(transient-nonstandard-key ((,c :foreground ,warning)))
+    `(transient-delimiter ((,c :foreground ,border)))
 
     ;; Diagnostics and code intelligence
     `(flycheck-error ((,c :inherit lackluster-theme-underline-error)))
@@ -426,8 +469,8 @@ Boldness follows `lackluster-theme-no-bold'."
     `(magit-diff-conflict-heading-highlight ((,c :background ,bg-active :foreground ,warning)))
     `(magit-diff-context ((,c :inherit shadow)))
     `(magit-diff-context-highlight ((,c :background ,bg-dim :foreground ,fg-main)))
-    `(magit-diff-file-heading ((,c :foreground ,fg-alt)))
-    `(magit-diff-file-heading-highlight ((,c :background ,bg-alt :foreground ,fg-alt)))
+    `(magit-diff-file-heading ((,c :foreground ,fg-main)))
+    `(magit-diff-file-heading-highlight ((,c :background ,bg-alt :foreground ,fg-main)))
     `(magit-diff-file-heading-selection ((,c :background ,bg-hover :foreground ,fg-main)))
     `(magit-diff-hunk-heading ((,c :background ,bg-alt :foreground ,fg-alt)))
     `(magit-diff-hunk-heading-highlight ((,c :background ,bg-active :foreground ,fg-main)))
@@ -451,6 +494,7 @@ Boldness follows `lackluster-theme-no-bold'."
     `(magit-diffstat-removed ((,c :foreground ,fg-removed)))
     `(magit-diff-whitespace-warning ((,c :inherit warning)))
     `(magit-dimmed ((,c :inherit shadow)))
+    `(magit-filename ((,c :foreground ,fg-main)))
     `(magit-hash ((,c :foreground ,fg-dim)))
     `(magit-head ((,c :foreground ,fg-alt)))
     `(magit-header-line ((,c :background ,bg-alt :foreground ,fg-main)))
@@ -883,7 +927,8 @@ With prefix argument MAPPINGS, show only semantic mappings."
       (fg-main gray8)
       (bg-dim gray2)
       (fg-dim gray5)
-      (bg-alt "#1A1A1A")
+      (bg-alt "#0f0f0f")
+      (bg-solaire bg-alt)
       (fg-alt gray7)
       (bg-active gray3)
       (bg-inactive gray1)
@@ -893,9 +938,9 @@ With prefix argument MAPPINGS, show only semantic mappings."
       (fg-search black)
 
       ;; UI states
-      (bg-mode-line "#242424")
+      (bg-mode-line "#0f0f0f")
       (fg-mode-line gray7)
-      (bg-completion gray3)
+      (bg-completion bg-alt)
       (bg-hover gray2)
       (bg-hl-line gray2)
       (bg-region gray8)

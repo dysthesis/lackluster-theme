@@ -92,6 +92,8 @@
       (setq lackluster-theme-pure-black-white t)
       (expect (lackluster-theme-test--palette-color 'lackluster 'bg-main)
               :to-equal "#000000")
+      (expect (lackluster-theme-test--palette-color 'lackluster 'bg-solaire)
+              :to-equal "#000000")
       (expect (lackluster-theme-test--palette-color 'lackluster 'fg-main)
               :to-equal "#ffffff")))
 
@@ -105,6 +107,22 @@
       (load-theme 'lackluster-night t :no-enable)
       (expect (lackluster-theme-test--face-plist 'lackluster-night 'solaire-default-face)
               :to-be-truthy)))
+
+  (describe "Surface Tuning"
+    (it "uses the darker modeline background"
+      (expect (lackluster-theme-test--palette-color 'lackluster 'bg-mode-line)
+              :to-equal "#0f0f0f"))
+
+    (it "keeps completion selection on the darker auxiliary background"
+      (expect (lackluster-theme-test--palette-color 'lackluster 'bg-completion)
+              :to-equal "#0f0f0f"))
+
+    (it "uses the main surface background for solaire buffers in pure black mode"
+      (setq lackluster-theme-pure-black-white t)
+      (load-theme 'lackluster t :no-enable)
+      (expect (plist-get (lackluster-theme-test--face-plist 'lackluster 'solaire-default-face)
+                         :background)
+              :to-equal "#000000")))
 
   (describe "Org Presentation"
     (it "uses muted gray metadata faces"
@@ -134,7 +152,27 @@
         (expect (lackluster-theme-test--face-foreground 'lackluster 'magit-branch-remote)
                 :to-equal dim)
         (expect (lackluster-theme-test--face-foreground 'lackluster 'majutsu-hash)
-                :to-equal dim))))
+                :to-equal dim)))
+
+    (it "uses the main foreground for Magit filenames"
+      (load-theme 'lackluster t :no-enable)
+      (expect (lackluster-theme-test--face-foreground 'lackluster 'magit-diff-file-heading)
+              :to-equal (lackluster-theme-test--palette-color 'lackluster 'fg-main)))
+
+    (it "overrides Majutsu log columns to use themed faces"
+      (defvar majutsu-log-commit-columns nil)
+      (setq majutsu-log-commit-columns nil)
+      (lackluster-theme--apply-package-settings)
+      (expect (plist-get (car majutsu-log-commit-columns) :face) :to-equal 'majutsu-hash)
+      (expect (plist-get (nth 6 majutsu-log-commit-columns) :face) :to-equal 'default)))
+
+  (describe "Completion Presentation"
+    (it "uses lighter gray Orderless matches"
+      (load-theme 'lackluster t :no-enable)
+      (expect (lackluster-theme-test--face-foreground 'lackluster 'orderless-match-face-0)
+              :to-equal (lackluster-theme-test--palette-color 'lackluster 'fg-alt))
+      (expect (lackluster-theme-test--face-foreground 'lackluster 'orderless-match-face-2)
+              :to-equal (lackluster-theme-test--palette-color 'lackluster 'fg-intense))))
 
   (describe "Baseline Highlighting"
     (it "keeps baseline keywords and calls neutral while accenting sparse syntax"
