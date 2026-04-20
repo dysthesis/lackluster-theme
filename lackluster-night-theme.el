@@ -27,7 +27,7 @@
        (keyword lack)
        (builtin blue)
        (preprocessor blue)
-       (string yellow)
+       (string gray8)
        (escape blue)
        (type fg-alt)
        (comment yellow))

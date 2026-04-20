@@ -82,8 +82,8 @@ keeps the same muted supporting grays and accents."
 (defconst lackluster-theme--majutsu-log-commit-columns
   '((:field change-id :module heading :face majutsu-hash)
     (:field bookmarks :module heading :face magit-branch-local)
-    (:field tags :module heading :face magit-tag)
-    (:field working-copies :module heading :face magit-branch-remote)
+    (:field tags :module heading :face magit-refname)
+    (:field working-copies :module heading :face magit-branch-local)
     (:field empty :module heading :face shadow)
     (:field git-head :module heading :face magit-head)
     (:field description :module heading :face default)
@@ -204,6 +204,60 @@ Boldness follows `lackluster-theme-no-bold'."
     (setq majutsu-log-commit-columns
           (copy-tree lackluster-theme--majutsu-log-commit-columns))))
 
+(defvar-local lackluster-theme--vcs-buffer-remaps nil
+  "Buffer-local face remaps used for VCS-oriented buffers.")
+
+(defun lackluster-theme--clear-vcs-buffer-remaps ()
+  "Remove buffer-local VCS remaps from the current buffer."
+  (when lackluster-theme--vcs-buffer-remaps
+    (mapc #'face-remap-remove-relative lackluster-theme--vcs-buffer-remaps)
+    (setq lackluster-theme--vcs-buffer-remaps nil)))
+
+(defun lackluster-theme--vcs-buffer-p ()
+  "Return non-nil when the current buffer should use VCS buffer styling."
+  (or (derived-mode-p 'magit-mode)
+      (string-prefix-p "*majutsu" (buffer-name))
+      (string-prefix-p "Majutsu" (format-mode-line mode-name))))
+
+(defun lackluster-theme--apply-vcs-buffer-remap ()
+  "Apply a slightly lifted background to Magit and Majutsu buffers."
+  (if (not (lackluster-theme--vcs-buffer-p))
+      (lackluster-theme--clear-vcs-buffer-remaps)
+    (unless lackluster-theme--vcs-buffer-remaps
+      (condition-case nil
+          (lackluster-theme-with-colors
+            (setq lackluster-theme--vcs-buffer-remaps
+                  (list
+                   (face-remap-add-relative 'default `(:background ,bg-vcs))
+                   (face-remap-add-relative 'fringe `(:background ,bg-vcs))
+                   (face-remap-add-relative 'line-number `(:background ,bg-vcs))
+                   (face-remap-add-relative 'hl-line `(:background ,bg-active)))))
+        (error nil)))))
+
+(defun lackluster-theme--refresh-vcs-buffers ()
+  "Refresh buffer-local VCS remaps in all live buffers."
+  (dolist (buffer (buffer-list))
+    (with-current-buffer buffer
+      (lackluster-theme--apply-vcs-buffer-remap))))
+
+(defun lackluster-theme--majutsu-decoration-face (module decoration)
+  "Return a neutral face for Majutsu MODULE DECORATION, or nil."
+  (pcase (list module decoration)
+    (`(heading graph-prefix) 'shadow)
+    (`(heading graph-carry) 'shadow)
+    (`(body body-prefix) 'shadow)
+    (_ nil)))
+
+(defun lackluster-theme--majutsu-neutralize-decoration (orig-fn text entry-id module decoration)
+  "Wrap ORIG-FN and neutralize Majutsu graph colors.
+
+TEXT, ENTRY-ID, MODULE, and DECORATION are the original decoration
+arguments from `majutsu-log--propertize-decoration'."
+  (let ((string (funcall orig-fn text entry-id module decoration)))
+    (when-let ((face (lackluster-theme--majutsu-decoration-face module decoration)))
+      (put-text-property 0 (length string) 'font-lock-face face string))
+    string))
+
 (defconst lackluster-theme--rust-extra-font-lock-keywords
   '(("\(::\)" 1 font-lock-delimiter-face prepend))
   "Extra Rust font-lock rules used to keep path separators subdued.")
@@ -216,6 +270,8 @@ used by `rustic' unless the user explicitly opts into `rust-ts-mode'."
   (font-lock-add-keywords nil lackluster-theme--rust-extra-font-lock-keywords 'append))
 
 (with-eval-after-load 'majutsu-log
+  (advice-add 'majutsu-log--propertize-decoration :around
+              #'lackluster-theme--majutsu-neutralize-decoration)
   (lackluster-theme--apply-package-settings))
 
 (with-eval-after-load 'rust-prog-mode
@@ -223,6 +279,9 @@ used by `rustic' unless the user explicitly opts into `rust-ts-mode'."
 
 (with-eval-after-load 'rustic
   (add-hook 'rustic-mode-hook #'lackluster-theme--rust-font-lock-setup))
+
+(add-hook 'after-change-major-mode-hook #'lackluster-theme--apply-vcs-buffer-remap)
+(add-hook 'lackluster-theme-post-load-hook #'lackluster-theme--refresh-vcs-buffers)
 
 (lackluster-theme--apply-package-settings)
 
@@ -237,6 +296,10 @@ used by `rustic' unless the user explicitly opts into `rust-ts-mode'."
     `(tab-bar ((,c :background ,bg-main :foreground ,fg-alt)))
     `(tab-bar-tab ((,c :background ,bg-alt :foreground ,fg-main)))
     `(tab-bar-tab-inactive ((,c :background ,bg-main :foreground ,fg-dim)))
+    `(vertical-border ((,c :foreground ,gray3 :background ,bg-main)))
+    `(window-divider ((,c :foreground ,gray3 :background ,bg-main)))
+    `(window-divider-first-pixel ((,c :foreground ,gray3 :background ,bg-main)))
+    `(window-divider-last-pixel ((,c :foreground ,gray3 :background ,bg-main)))
     `(line-number ((,c :foreground ,fg-dim :background ,bg-main)))
     `(line-number-current-line ((,c ,@(lackluster-theme--bold) :foreground ,fg-alt :background ,bg-main)))
     `(hl-line ((,c :background ,bg-hl-line :extend t)))
@@ -953,6 +1016,7 @@ With prefix argument MAPPINGS, show only semantic mappings."
       (fg-dim gray5)
       (bg-alt "#0f0f0f")
       (bg-popup "#161616")
+      (bg-vcs "#141414")
       (bg-solaire bg-alt)
       (fg-alt gray7)
       (bg-active gray3)
@@ -1030,7 +1094,7 @@ With prefix argument MAPPINGS, show only semantic mappings."
       (keyword fg-main)
       (property fg-main)
       (preprocessor fg-main)
-      (string green)
+      (string lack)
       (escape green)
       (type fg-main)
       (variable blue)

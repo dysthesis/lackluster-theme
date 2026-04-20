@@ -121,6 +121,10 @@
       (expect (lackluster-theme-test--palette-color 'lackluster 'bg-popup)
               :to-equal "#161616"))
 
+    (it "uses a slightly lifted background for VCS buffers"
+      (expect (lackluster-theme-test--palette-color 'lackluster 'bg-vcs)
+              :to-equal "#141414"))
+
     (it "uses the main surface background for solaire buffers in pure black mode"
       (setq lackluster-theme-pure-black-white t)
       (load-theme 'lackluster t :no-enable)
@@ -163,6 +167,11 @@
       (expect (lackluster-theme-test--face-foreground 'lackluster 'magit-diff-file-heading)
               :to-equal (lackluster-theme-test--palette-color 'lackluster 'fg-main)))
 
+    (it "dims the window divider instead of leaving it bright"
+      (load-theme 'lackluster t :no-enable)
+      (expect (lackluster-theme-test--face-foreground 'lackluster 'window-divider)
+              :to-equal (lackluster-theme-test--palette-color 'lackluster 'gray3)))
+
     (it "overrides Majutsu log columns to use themed faces"
       (defvar majutsu-log-commit-columns nil)
       (setq majutsu-log-commit-columns nil)
@@ -176,7 +185,9 @@
       (expect (lackluster-theme-test--face-foreground 'lackluster-night 'font-lock-keyword-face)
               :to-equal (lackluster-theme-test--palette-color 'lackluster-night 'keyword))
       (expect (lackluster-theme-test--face-foreground 'lackluster-night 'font-lock-variable-name-face)
-              :to-equal (lackluster-theme-test--palette-color 'lackluster-night 'variable)))
+              :to-equal (lackluster-theme-test--palette-color 'lackluster-night 'variable))
+      (expect (lackluster-theme-test--face-foreground 'lackluster-night 'font-lock-string-face)
+              :to-equal (lackluster-theme-test--palette-color 'lackluster-night 'string)))
 
     (it "adds a Rust rule to keep double-colon delimiters neutral"
       (expect lackluster-theme--rust-extra-font-lock-keywords
@@ -226,12 +237,9 @@
     (it "makes `lackluster-dark' more subdued than the baseline"
       (load-theme 'lackluster t :no-enable)
       (load-theme 'lackluster-dark t :no-enable)
-      (let ((base-fn (lackluster-theme-test--face-foreground 'lackluster 'font-lock-function-name-face))
-            (base-string (lackluster-theme-test--face-foreground 'lackluster 'font-lock-string-face)))
+      (let ((base-fn (lackluster-theme-test--face-foreground 'lackluster 'font-lock-function-name-face)))
         (expect (lackluster-theme-test--face-foreground 'lackluster-dark 'font-lock-function-name-face)
-                :not :to-equal base-fn)
-        (expect (lackluster-theme-test--face-foreground 'lackluster-dark 'font-lock-string-face)
-                :not :to-equal base-string)))
+                :not :to-equal base-fn)))
 
     (it "makes `lackluster-hack' colour keywords"
       (load-theme 'lackluster-hack t :no-enable)
