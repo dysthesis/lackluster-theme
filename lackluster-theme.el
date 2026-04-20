@@ -223,16 +223,20 @@ Boldness follows `lackluster-theme-no-bold'."
   "Apply a slightly lifted background to Magit and Majutsu buffers."
   (if (not (lackluster-theme--vcs-buffer-p))
       (lackluster-theme--clear-vcs-buffer-remaps)
-    (unless lackluster-theme--vcs-buffer-remaps
-      (condition-case nil
-          (lackluster-theme-with-colors
-            (setq lackluster-theme--vcs-buffer-remaps
-                  (list
-                   (face-remap-add-relative 'default `(:background ,bg-vcs))
-                   (face-remap-add-relative 'fringe `(:background ,bg-vcs))
-                   (face-remap-add-relative 'line-number `(:background ,bg-vcs))
-                   (face-remap-add-relative 'hl-line `(:background ,bg-active)))))
-        (error nil)))))
+    (lackluster-theme--clear-vcs-buffer-remaps)
+    (condition-case nil
+        (lackluster-theme-with-colors
+          (setq lackluster-theme--vcs-buffer-remaps
+                (list
+                 (face-remap-add-relative 'default `(:background ,bg-vcs))
+                 (face-remap-add-relative 'solaire-default-face `(:background ,bg-vcs))
+                 (face-remap-add-relative 'fringe `(:background ,bg-vcs))
+                 (face-remap-add-relative 'solaire-fringe-face `(:background ,bg-vcs))
+                 (face-remap-add-relative 'line-number `(:background ,bg-vcs))
+                 (face-remap-add-relative 'solaire-line-number-face `(:background ,bg-vcs))
+                 (face-remap-add-relative 'hl-line `(:background ,bg-active))
+                 (face-remap-add-relative 'solaire-hl-line-face `(:background ,bg-active)))))
+      (error nil))))
 
 (defun lackluster-theme--refresh-vcs-buffers ()
   "Refresh buffer-local VCS remaps in all live buffers."
