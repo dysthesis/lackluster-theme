@@ -1,0 +1,157 @@
+#+TITLE: lackluster-theme for Emacs
+
+An Emacs 29+ port that combines the palette of [[https://github.com/slugbyte/lackluster.nvim][lackluster.nvim]] with the restrained syntax-highlighting philosophy described by Nikita Prokopov in [[https://tonsky.me/blog/syntax-highlighting/][I am sorry, but everyone is getting syntax highlighting wrong]].
+
+* Overview
+
+The package ships five dark theme variants:
+
+| Theme              | Description                                      |
+|--------------------+--------------------------------------------------|
+| =lackluster=       | Strict baseline with sparse, Alabaster-like use  |
+| =lackluster-dark=  | More subdued, closer to monochrome               |
+| =lackluster-hack=  | Gives keywords a little more colour              |
+| =lackluster-mint=  | Highlights type-oriented syntax more eagerly     |
+| =lackluster-night= | Loosest variant, but still restrained            |
+
+All variants share the same dark Lackluster UI palette, completion colours, search treatment, and package integrations.  They differ mainly in how willing they are to colour syntax.
+
+* Design Goals
+
+This port follows a few rules:
+
+1. Keep the number of memorable syntax colours small.
+2. Highlight sparse, structurally useful things first: strings, literals, comments, and definitions.
+3. Leave common, noisy syntax such as keyword soup, function calls, and variable uses close to the default foreground whenever possible.
+4. Keep punctuation subdued so names stand out first.
+5. Prefer colour over bold and italic emphasis.
+
+That means this package intentionally does *not* mirror lackluster.nvim's syntax groups one-to-one.  It keeps the palette and variant intent, but remaps them onto a more Alabaster-like highlighting model that works well with Emacs 29 treesit and LSP faces.
+
+* Requirements
+
+- Emacs 29.1 or newer
+
+* Installation
+
+** Manual
+
+1. Clone or copy this repository.
+2. Add it to your =load-path=.
+3. Load the main package file and theme:
+
+#+begin_src emacs-lisp
+(require 'lackluster-theme)
+(load-theme 'lackluster t)
+#+end_src
+
+** use-package
+
+#+begin_src emacs-lisp
+(use-package lackluster-theme
+  :load-path "path/to/lackluster-theme"
+  :config
+  (load-theme 'lackluster t))
+#+end_src
+
+* Usage
+
+Load a specific variant directly:
+
+#+begin_src emacs-lisp
+(load-theme 'lackluster-dark t)
+(load-theme 'lackluster-hack t)
+(load-theme 'lackluster-mint t)
+(load-theme 'lackluster-night t)
+#+end_src
+
+Or use the packaged selector:
+
+#+begin_src emacs-lisp
+(require 'lackluster-theme)
+(call-interactively #'lackluster-theme-select)
+#+end_src
+
+Preview a palette from Emacs:
+
+#+begin_src emacs-lisp
+(call-interactively #'lackluster-theme-list-colors)
+#+end_src
+
+* Customisation
+
+** Global palette overrides
+
+Apply the same overrides to every variant:
+
+#+begin_src emacs-lisp
+(setq lackluster-theme-common-palette-overrides
+      '((blue "#8a99c2")
+        (comment "#c3b27a")))
+#+end_src
+
+** Per-variant overrides
+
+#+begin_src emacs-lisp
+(setq lackluster-night-palette-overrides
+      '((keyword "#8a99c2")
+        (string "#d0b26f")))
+#+end_src
+
+** Typography
+
+The package defaults to avoiding bold text.
+
+#+begin_src emacs-lisp
+(setq lackluster-theme-no-bold nil)
+#+end_src
+
+Heading helper faces can be scaled with:
+
+#+begin_src emacs-lisp
+(setq lackluster-theme-heading-scales
+      '((0 . 1.25)
+        (1 . 1.16)
+        (2 . 1.10)))
+#+end_src
+
+* Face Coverage
+
+The shared face table covers the Emacs core plus common packages and UIs, including:
+
+- Font lock and Emacs 29 treesit-oriented faces
+- Org
+- Dired and diredfl
+- Magit, diff-hl, git-gutter
+- Consult, Company, Corfu, Vertico, Orderless, Embark, Marginalia, Which-Key
+- Flycheck, Flymake, Eglot, and common LSP-mode faces
+- Avy, Rainbow Delimiters, Show Paren, Helpful, Custom, All The Icons
+
+* Commands
+
+- =lackluster-theme-load-theme=: load a packaged Lackluster theme while disabling all other themes first
+- =lackluster-theme-select=: choose a variant with minibuffer completion
+- =lackluster-theme-list-colors=: preview a palette or semantic mappings
+
+* Development
+
+Run the test suite:
+
+#+begin_src sh
+make test
+#+end_src
+
+Run lint checks:
+
+#+begin_src sh
+make check
+#+end_src
+
+* Credits
+
+- Palette and variant inspiration from [[https://github.com/slugbyte/lackluster.nvim][lackluster.nvim]] by Duncan Marsh.
+- Highlighting philosophy from Nikita Prokopov's Alabaster work and article.
+
+* License
+
+MIT.
