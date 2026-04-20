@@ -19,10 +19,10 @@
 (eval-and-compile
   (defconst lackluster-hack-palette
     (append
-     '((keyword lack)
-       (builtin lack)
-       (preprocessor lack)
-       (escape blue))
+     '((keyword fg-alt)
+        (builtin lack)
+        (preprocessor lack)
+        (escape blue))
      lackluster-palette)
     "Palette for `lackluster-hack'."))
 

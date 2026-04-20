@@ -204,8 +204,25 @@ Boldness follows `lackluster-theme-no-bold'."
     (setq majutsu-log-commit-columns
           (copy-tree lackluster-theme--majutsu-log-commit-columns))))
 
+(defconst lackluster-theme--rust-extra-font-lock-keywords
+  '(("\(::\)" 1 font-lock-delimiter-face prepend))
+  "Extra Rust font-lock rules used to keep path separators subdued.")
+
+(defun lackluster-theme--rust-font-lock-setup ()
+  "Add a small delimiter pass for Rust buffers.
+
+This keeps `::' neutral in non-treesit Rust modes such as the one
+used by `rustic' unless the user explicitly opts into `rust-ts-mode'."
+  (font-lock-add-keywords nil lackluster-theme--rust-extra-font-lock-keywords 'append))
+
 (with-eval-after-load 'majutsu-log
   (lackluster-theme--apply-package-settings))
+
+(with-eval-after-load 'rust-prog-mode
+  (add-hook 'rust-mode-hook #'lackluster-theme--rust-font-lock-setup))
+
+(with-eval-after-load 'rustic
+  (add-hook 'rustic-mode-hook #'lackluster-theme--rust-font-lock-setup))
 
 (lackluster-theme--apply-package-settings)
 

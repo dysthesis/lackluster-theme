@@ -170,6 +170,18 @@
       (expect (plist-get (car majutsu-log-commit-columns) :face) :to-equal 'majutsu-hash)
       (expect (plist-get (nth 6 majutsu-log-commit-columns) :face) :to-equal 'default)))
 
+  (describe "Language Presentation"
+    (it "keeps lackluster-night bindings distinct from keywords"
+      (load-theme 'lackluster-night t :no-enable)
+      (expect (lackluster-theme-test--face-foreground 'lackluster-night 'font-lock-keyword-face)
+              :to-equal (lackluster-theme-test--palette-color 'lackluster-night 'fg-alt))
+      (expect (lackluster-theme-test--face-foreground 'lackluster-night 'font-lock-variable-name-face)
+              :to-equal (lackluster-theme-test--palette-color 'lackluster-night 'variable)))
+
+    (it "adds a Rust rule to keep double-colon delimiters neutral"
+      (expect lackluster-theme--rust-extra-font-lock-keywords
+              :to-equal '(("(::)" 1 font-lock-delimiter-face prepend)))))
+
   (describe "Completion Presentation"
     (it "uses lighter gray Orderless matches"
       (load-theme 'lackluster t :no-enable)

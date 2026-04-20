@@ -19,9 +19,9 @@
 (eval-and-compile
   (defconst lackluster-night-palette
     (append
-     '((keyword lack)
-       (builtin blue)
-       (preprocessor blue)
+     '((keyword fg-alt)
+       (builtin lack)
+       (preprocessor lack)
        (string yellow)
        (escape blue)
        (type blue)
